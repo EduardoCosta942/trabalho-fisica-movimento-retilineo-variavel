@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Calculadora MRUV</title>
+</head>
+
+<body class="light">
+  <div id="main-container" class="container">
+    <div id="header">
+      <h1 id="titulo">Calculadora de MRUV</h1>
+      <button id="mudar-tema" onclick="document.body.classList.toggle('dark')">🌓 Tema</button>
+    </div>
+
+    <p id="descricao">Preencha os valores da equação <strong>v = v₀ + a · t</strong></p>
+
+    <form id="form-mruv">
+      <div id="campo-v0" class="campo">
+        <label for="v0">Velocidade Inicial (v₀) [m/s]</label>
+        <input type="number" id="v0" placeholder="Ex: 5">
+      </div>
+
+      <div id="campo-a" class="campo">
+        <label for="a">Aceleração (a) [m/s²]</label>
+        <input type="number" id="a" placeholder="Ex: 2">
+      </div>
+
+      <div id="campo-t" class="campo">
+        <label for="t">Tempo (t) [s]</label>
+        <input type="number" id="t" placeholder="Ex: 4">
+      </div>
+
+      <div id="campo-v" class="campo">
+        <label for="v">Velocidade Final (v) [m/s]</label>
+        <input type="number" id="v" placeholder="Ex: 13">
+      </div>
+
+      <div id="nota" class="note">
+        <strong>Nota:</strong> Preencha três dos quatro campos e calcule manualmente o valor restante usando a fórmula.
+      </div>
+
+      <button type="reset" id="limpar">Limpar Campos</button>
+    </form>
+  </div>
+</body>
+
+</html>
+
+<!-- 1. class: "light" do body -> Body Geral
+
+2. id: "main" container" com class "container" da primeira div -> Div Geral
+
+3. id: "header" da segunda Div -> Div do Header
+
+4. id: "titulo" do primeiro h1 -> Título do Header
+
+5. id: "mudar-tema" do primeiro Button -> Botão de Mudar Tema
+
+6. id: "descricao" do primeiro parágrafo -> Primeira Frase Embaixo do Header
+
+7. id: "form-mruv" do primeiro Form -> O Form que vai os Inputs
+
+8. id: "campo-v0" e class "campo" da terceira div -> Começam os Campos para Digitação e Entrada de Dados, esse da velocidade0
+ 
+9. id: "v0" do primeiro input -> Primeiro Input
+
+10. id: "campo-a" e class "campo" da quarta div -> Mais um Campo, esse da Aceleração
+
+11. id: "a" do segundo input -> Segundo Input
+
+12. id: "campo-t" e class "campo" da quinta div -> Mais um Campo, esse do Tempo
+
+13. id: "t" do terceiro input -> Terceiro Input
+
+14. id: "campo-v" e class "campo" da sexta div -> Mais um Campo, esse da Velocidade Final
+
+15. id: "v" do quarto input -> Quarto Input
+
+16. id: "nota" e class "note" da sétima div -> Uma frase só pra ter uma noção de que está sem cálculos
+
+17. id: "limpar" do segundo button -> O Button de Limpar os Campos dos Dados -->
