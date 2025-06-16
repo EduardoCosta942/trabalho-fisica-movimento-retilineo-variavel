@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="assets/calculadora.css">
+  <script src="assets/calculadora.js"></script>
   <title>Calculadora MRUV</title>
 </head>
 
@@ -34,15 +35,14 @@
       </div>
 
       <div id="campo-v" class="campo">
-        <label for="v">Velocidade Final (v) [m/s]</label>
-        <input type="number" id="v" placeholder="Ex: 13">
+        <h2 id="v">A velocidade final é igual a...</h2>
       </div>
 
       <div id="nota" class="note">
         <strong>Nota:</strong> Preencha três dos quatro campos e calcule manualmente o valor restante usando a fórmula.
       </div>
 
-      <button type="reset" id="limpar">Limpar Campos</button>
+      <button type="submit" onClick = "calcularVelocidadeFinal()" id="calcular">Calcular</button>
     </form>
   </div>
 </body>
@@ -77,8 +77,8 @@
 
 14. id: "campo-v" e class "campo" da sexta div -> Mais um Campo, esse da Velocidade Final
 
-15. id: "v" do quarto input -> Quarto Input
+15. id: "v" do h2 -> Resultado
 
 16. id: "nota" e class "note" da sétima div -> Uma frase só pra ter uma noção de que está sem cálculos
 
-17. id: "limpar" do segundo button -> O Button de Limpar os Campos dos Dados -->
+17. id: "calcular" do segundo button -> O Button de Calcular conforme a formular -->

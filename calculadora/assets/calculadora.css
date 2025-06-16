@@ -86,7 +86,7 @@ body.dark .note {
   background: #292929;
   border-left-color: #66ccff;
 }
-#limpar {
+#calcular {
   margin-top: 20px;
   padding: 12px;
   font-size: 15px;
@@ -98,7 +98,7 @@ body.dark .note {
   width: 100%;
   transition: 0.3s;
 }
-#limpar:hover {
+#calcular:hover {
   background: #358ee4;
 }
 @media (max-width: 500px) {
