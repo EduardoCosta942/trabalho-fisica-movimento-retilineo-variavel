@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de MRUV</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 Simulador de Movimento Uniformemente Variado (MRUV)</h1>
+            <div class="header-controls">
+                <button id="theme-toggle">🌙 Modo Noturno</button>
+                <select id="motion-type">
+                    <option value="mruv">MRUV</option>
+                    <option value="mru">MRU</option>
+                </select>
+            </div>
+        </header>
+        
+        <div class="input-section">
+            <div class="input-group" data-tooltip="Velocidade no início do movimento (m/s)">
+                <label for="v0">v₀ (Veloc. Inicial):</label>
+                <input type="number" id="v0" placeholder="m/s">
+            </div>
+            
+            <div class="input-group" id="a-input" data-tooltip="Taxa de variação da velocidade (m/s²)">
+                <label for="a">a (Aceleração):</label>
+                <input type="number" id="a" placeholder="m/s²">
+            </div>
+            
+            <div class="input-group" data-tooltip="Velocidade no final do movimento (m/s)">
+                <label for="v">v (Veloc. Final):</label>
+                <input type="number" id="v" placeholder="m/s">
+            </div>
+            
+            <div class="input-group" data-tooltip="Duração do movimento (s)">
+                <label for="t">t (Tempo):</label>
+                <input type="number" id="t" placeholder="s">
+            </div>
+            
+            <div class="input-group" data-tooltip="Distância percorrida (m)">
+                <label for="s">s (Deslocamento):</label>
+                <input type="number" id="s" placeholder="m">
+            </div>
+        </div>
+
+        <div class="unit-toggle">
+            <label for="unit-toggle">Usar km/h:</label>
+            <input type="checkbox" id="unit-toggle">
+        </div>
+
+        <div class="controls">
+            <button id="calc-accel">Calcular Aceleração (a)</button>
+            <button id="calc-velocity">Calcular Veloc. Final (v)</button>
+            <button id="calc-time">Calcular Tempo (t)</button>
+            <button id="calc-displacement">Calcular Deslocamento (s)</button>
+            <button id="examples-btn">Exemplos</button>
+            <button id="reset-btn">🔄 Resetar</button>
+            <button id="export-pdf">📄 Exportar PDF</button>
+            <button id="save-sim">💾 Salvar Simulação</button>
+            <button id="load-sim">📂 Carregar Simulação</button>
+        </div>
+
+        <div class="results">
+            <div class="result-header">
+                <h2>Resultado do Cálculo</h2>
+                <button id="show-formula-btn">Mostrar Fórmula</button>
+            </div>
+            
+            <div class="result-content">
+                <div id="formula-display" class="hidden">
+                    <h3>Fórmula Utilizada:</h3>
+                    <div id="formula"></div>
+                </div>
+                
+                <div class="calculation-steps">
+                    <h3>Passo a Passo:</h3>
+                    <div id="calculation-steps"></div>
+                </div>
+                
+                <div class="final-result">
+                    <h3>Resultado Final:</h3>
+                    <div id="result"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="animation-section">
+            <div id="track">
+                <div id="car">
+                    <svg width="100" height="50" viewBox="0 0 100 50">
+                        <rect x="15" y="15" width="70" height="20" rx="5" fill="#3498db" />
+                        <rect x="20" y="5" width="60" height="15" rx="3" fill="#2980b9" />
+                        <circle cx="30" cy="40" r="7" fill="#2c3e50" />
+                        <circle cx="70" cy="40" r="7" fill="#2c3e50" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="velocity-chart"></canvas>
+        </div>
+
+        <div class="quiz-section">
+            <h2>Quiz de Cinemática</h2>
+            <div id="quiz-question"></div>
+            <div id="quiz-options"></div>
+            <div id="quiz-feedback"></div>
+        </div>
+    </div>
+
+    <div class="help-icon" id="help-icon">?</div>
+    <div class="help-modal" id="help-modal">
+        <h3>Ajuda - Fórmulas do MRUV</h3>
+        <ul>
+            <li><strong>v = v₀ + a·t</strong>: Velocidade final</li>
+            <li><strong>s = s₀ + v₀·t + ½·a·t²</strong>: Deslocamento</li>
+            <li><strong>a = (v - v₀)/t</strong>: Aceleração</li>
+            <li><strong>v² = v₀² + 2·a·Δs</strong>: Torricelli</li>
+        </ul>
+        <button id="close-help">Fechar</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
