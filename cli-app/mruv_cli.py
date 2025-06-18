@@ -26,31 +26,55 @@ def plotar_grafico(v0, a, t):
     tempo = np.linspace(0, t, 100)
     velocidade = v0 + a * tempo
     
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 6))
     plt.plot(tempo, velocidade, 'b-', linewidth=2)
-    plt.title('MRUV: Velocidade vs Tempo')
-    plt.xlabel('Tempo (s)')
-    plt.ylabel('Velocidade (m/s)')
+    plt.title('MRUV: Velocidade vs Tempo', fontsize=16)
+    plt.xlabel('Tempo (s)', fontsize=12)
+    plt.ylabel('Velocidade (m/s)', fontsize=12)
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.axhline(y=0, color='k', linestyle='-')
     plt.axvline(x=0, color='k', linestyle='-')
+    
+    # Adicionar equação
+    eq_text = f'v = {v0:.2f} + {a:.2f}×t'
+    plt.text(0.02, 0.95, eq_text, transform=plt.gca().transAxes, 
+             fontsize=12, bbox=dict(facecolor='white', alpha=0.8))
+    
+    plt.tight_layout()
     plt.show()
 
+def mostrar_tabela(v0, a, t):
+    """Exibe uma tabela com os dados da simulação"""
+    print("\nDados da Simulação:")
+    print("+" + "-"*50 + "+")
+    print(f"| {'Tempo (s)':<12} | {'Posição (m)':<12} | {'Velocidade (m/s)':<16} |")
+    print("+" + "-"*50 + "+")
+    
+    passos = 10
+    for i in range(passos + 1):
+        tempo_atual = (i / passos) * t
+        velocidade = v0 + a * tempo_atual
+        deslocamento = v0 * tempo_atual + 0.5 * a * tempo_atual ** 2
+        print(f"| {tempo_atual:>10.2f} | {deslocamento:>12.2f} | {velocidade:>16.2f} |")
+    
+    print("+" + "-"*50 + "+")
+
 def main():
-    print("\n" + "="*50)
-    print("SIMULADOR DE MRUV - MOVIMENTO RETILÍNEO UNIFORMEMENTE VARIADO")
-    print("="*50)
+    print("\n" + "="*60)
+    print("SIMULADOR DE MRUV - MOVIMENTO RETILÍNEO UNIFORMEMENTE VARIADO".center(60))
+    print("="*60)
     
     while True:
-        print("\nOpções:")
+        print("\nOpções disponíveis:")
         print("1. Calcular aceleração (a)")
         print("2. Calcular velocidade final (v)")
         print("3. Calcular tempo (t)")
         print("4. Calcular deslocamento (s)")
         print("5. Plotar gráfico velocidade vs tempo")
-        print("6. Sair")
+        print("6. Mostrar tabela de dados")
+        print("7. Sair")
         
-        escolha = input("\nEscolha uma opção (1-6): ")
+        escolha = input("\nEscolha uma opção (1-7): ")
         
         try:
             if escolha == '1':
@@ -67,7 +91,7 @@ def main():
                 t = float(input("Tempo (t) em segundos: "))
                 v = calcular_velocidade_final(v0, a, t)
                 print(f"\nResultado: v = {v:.2f} m/s")
-                print(f"Fórmula: v = v0 + a*t = {v0} + {a}*{t}")
+                print(f"Fórmula: v = v0 + a×t = {v0} + {a}×{t}")
                 
             elif escolha == '3':
                 v0 = float(input("Velocidade inicial (v0) em m/s: "))
@@ -83,7 +107,7 @@ def main():
                 t = float(input("Tempo (t) em segundos: "))
                 s = calcular_deslocamento(v0, a, t)
                 print(f"\nResultado: s = {s:.2f} m")
-                print(f"Fórmula: s = v0*t + 0.5*a*t² = {v0}*{t} + 0.5*{a}*{t}²")
+                print(f"Fórmula: s = v0×t + ½×a×t² = {v0}×{t} + 0.5×{a}×{t}²")
                 
             elif escolha == '5':
                 v0 = float(input("Velocidade inicial (v0) em m/s: "))
@@ -92,16 +116,22 @@ def main():
                 plotar_grafico(v0, a, t)
                 
             elif escolha == '6':
+                v0 = float(input("Velocidade inicial (v0) em m/s: "))
+                a = float(input("Aceleração (a) em m/s²: "))
+                t = float(input("Tempo total (t) em segundos: "))
+                mostrar_tabela(v0, a, t)
+                
+            elif escolha == '7':
                 print("\nEncerrando o simulador...")
                 break
                 
             else:
-                print("\nOpção inválida. Tente novamente!")
+                print("\nOpção inválida. Por favor, escolha de 1 a 7.")
                 
         except ValueError as e:
             print(f"\nErro: {e}")
         except Exception as e:
-            print(f"\nOcorreu um erro: {e}")
+            print(f"\nOcorreu um erro inesperado: {e}")
 
 if __name__ == "__main__":
     main()

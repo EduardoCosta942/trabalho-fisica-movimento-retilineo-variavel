@@ -1,31 +1,35 @@
 :root {
-    --primary: #3498db;
-    --secondary: #2ecc71;
-    --danger: #e74c3c;
-    --dark: #2c3e50;
-    --light: #ecf0f1;
-    --text: #333;
-    --bg: #f9f9f9;
+    --primaria: #3498db;
+    --secundaria: #2ecc71;
+    --perigo: #e74c3c;
+    --escuro: #2c3e50;
+    --claro: #ecf0f1;
+    --texto: #333;
+    --fundo: #f9f9f9;
+    --sombra: 0 5px 15px rgba(0,0,0,0.1);
+    --borda: 1px solid #ddd;
 }
 
-.dark-mode {
-    --text: #ecf0f1;
-    --bg: #1a1a2e;
-    --dark: #16213e;
-    --light: #0f3460;
+.modo-noturno {
+    --texto: #ecf0f1;
+    --fundo: #1a1a2e;
+    --escuro: #16213e;
+    --claro: #0f3460;
+    --sombra: 0 5px 15px rgba(0,0,0,0.3);
+    --borda: 1px solid #34495e;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    transition: background 0.3s, color 0.3s;
+    transition: background 0.3s, color 0.3s, border 0.3s;
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
+    background-color: var(--fundo);
+    color: var(--texto);
     line-height: 1.6;
     padding: 20px;
 }
@@ -35,13 +39,13 @@ body {
     margin: 0 auto;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: var(--sombra);
     padding: 25px;
     overflow: hidden;
 }
 
-.dark-mode .container {
-    background: var(--dark);
+.modo-noturno .container {
+    background: var(--escuro);
 }
 
 header {
@@ -50,7 +54,11 @@ header {
     align-items: center;
     margin-bottom: 25px;
     padding-bottom: 15px;
-    border-bottom: 2px solid var(--primary);
+    border-bottom: 2px solid var(--primaria);
+}
+
+h1, h2, h3 {
+    color: var(--primaria);
 }
 
 .input-section {
@@ -90,20 +98,21 @@ label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: var(--primary);
+    color: var(--primaria);
 }
 
-input {
+input[type="number"], input[type="text"], select {
     width: 100%;
     padding: 12px 15px;
-    border: 2px solid #ddd;
+    border: var(--borda);
     border-radius: 8px;
     font-size: 1rem;
-    transition: border 0.3s;
+    background-color: var(--claro);
+    color: var(--texto);
 }
 
-input:focus {
-    border-color: var(--primary);
+input:focus, select:focus {
+    border-color: var(--primaria);
     outline: none;
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
@@ -117,7 +126,7 @@ input:focus {
 
 button {
     padding: 12px 20px;
-    background: var(--primary);
+    background: var(--primaria);
     color: white;
     border: none;
     border-radius: 8px;
@@ -138,7 +147,11 @@ button:active {
 }
 
 #reset-btn {
-    background: var(--danger);
+    background: var(--perigo);
+}
+
+#simulate-btn {
+    background: var(--secundaria);
 }
 
 .results {
@@ -146,35 +159,84 @@ button:active {
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 25px;
-    border-left: 5px solid var(--primary);
+    border-left: 5px solid var(--primaria);
 }
 
-.dark-mode .results {
+.modo-noturno .results {
     background: rgba(255,255,255,0.05);
 }
 
-#formula-display {
-    font-size: 1.1rem;
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 15px;
-    color: var(--secondary);
-    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primaria);
 }
 
-#result {
+.result-content > div {
+    margin-bottom: 20px;
+}
+
+.calculation-steps {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid var(--secundaria);
+}
+
+.modo-noturno .calculation-steps {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.final-result {
+    padding: 15px;
+    background: #e8f5e9;
+    border-radius: 8px;
     font-size: 1.4rem;
-    font-weight: 700;
+    font-weight: bold;
+    text-align: center;
+}
+
+.modo-noturno .final-result {
+    background: rgba(46, 204, 113, 0.1);
+}
+
+.passo-calculo {
+    margin-bottom: 10px;
+    padding-left: 15px;
+    border-left: 2px solid var(--primaria);
+}
+
+.oculto {
+    display: none;
+}
+
+.formula-box {
+    font-family: monospace;
+    font-size: 1.2rem;
+    padding: 10px;
+    background: #f1f8e9;
+    border-radius: 5px;
+    margin-top: 10px;
+    border: 1px dashed var(--primaria);
+}
+
+.modo-noturno .formula-box {
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .animation-section {
     background: #e0f7fa;
-    height: 150px;
+    height: 180px;
     border-radius: 10px;
     margin-bottom: 30px;
     overflow: hidden;
     position: relative;
 }
 
-.dark-mode .animation-section {
+.modo-noturno .animation-section {
     background: rgba(0,0,0,0.2);
 }
 
@@ -190,7 +252,7 @@ button:active {
     );
 }
 
-.dark-mode #track {
+.modo-noturno #track {
     background: repeating-linear-gradient(
         90deg,
         transparent,
@@ -203,54 +265,157 @@ button:active {
 #car {
     height: 80px;
     position: absolute;
-    bottom: 10px;
+    bottom: 30px;
     left: 0;
     transition: left 0.1s linear;
 }
 
+#position-indicator {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
 .chart-container {
-    height: 300px;
+    height: 400px;
     margin-bottom: 30px;
     background: white;
     border-radius: 10px;
     padding: 15px;
     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    position: relative;
 }
 
-.dark-mode .chart-container {
+.modo-noturno .chart-container {
     background: rgba(255,255,255,0.05);
 }
 
-.quiz-section {
+.chart-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 5px;
+}
+
+.chart-controls button {
+    min-width: auto;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+.data-table {
+    margin-top: 30px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: var(--borda);
+}
+
+th {
+    background-color: var(--primaria);
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.modo-noturno tr:nth-child(even) {
+    background-color: rgba(255,255,255,0.05);
+}
+
+.help-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: var(--primaria);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.5rem;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    z-index: 100;
+    transition: transform 0.3s;
+}
+
+.help-icon:hover {
+    transform: scale(1.1);
+}
+
+.help-modal {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: white;
     padding: 20px;
-    background: #e3f2fd;
     border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    width: 350px;
+    z-index: 100;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
 }
 
-.dark-mode .quiz-section {
-    background: rgba(0,0,0,0.1);
+.modo-noturno .help-modal {
+    background: var(--escuro);
 }
 
-.quiz-section h2 {
-    margin-bottom: 15px;
-    color: var(--primary);
+.help-modal.mostrar {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
 }
 
-#quiz-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin: 15px 0;
+.help-content {
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
-#quiz-options button {
-    min-width: unset;
-    background: var(--secondary);
+.tips {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
 }
 
-#quiz-feedback {
-    min-height: 30px;
-    font-weight: 600;
+.modo-noturno .tips {
+    background: rgba(255,255,255,0.1);
+}
+
+#car.acelerando {
+    filter: hue-rotate(-30deg) saturate(150%);
+}
+
+#car.freiando {
+    filter: hue-rotate(60deg) saturate(200%);
+}
+
+#car.invertido {
+    transform: scaleX(-1);
 }
 
 @media (max-width: 768px) {
@@ -258,239 +423,12 @@ button:active {
         flex-direction: column;
     }
     
-    #quiz-options {
-        grid-template-columns: 1fr;
+    button {
+        min-width: 100%;
     }
-}
-
-/* Adicionar ao CSS */
-.help-icon {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    background: var(--primary);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    z-index: 100;
-}
-
-.help-modal {
-    position: fixed;
-    bottom: 70px;
-    right: 20px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    width: 300px;
-    z-index: 100;
-    transform: translateY(20px);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s ease;
-}
-
-.dark-mode .help-modal {
-    background: var(--dark);
-}
-
-.help-modal.show {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: all;
-}
-
-/* Adicionar ao CSS */
-#car.accelerating {
-    filter: hue-rotate(-30deg) saturate(150%);
-    transform: scaleX(1);
-}
-
-#car.braking {
-    filter: hue-rotate(60deg) saturate(200%);
-    transform: scaleX(1);
-}
-
-#car.reversing {
-    transform: scaleX(-1);
-}
-
-.tire-mark {
-    position: absolute;
-    height: 5px;
-    width: 40px;
-    background: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 5px,
-        #555 5px,
-        #555 10px
-    );
-    opacity: 0.7;
-    bottom: 10px;
-}
-
-/* Adicionar ao CSS */
-.help-icon {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    background: var(--primary);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    z-index: 100;
-}
-
-.help-modal {
-    position: fixed;
-    bottom: 70px;
-    right: 20px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    width: 300px;
-    z-index: 100;
-    transform: translateY(20px);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s ease;
-}
-
-.dark-mode .help-modal {
-    background: var(--dark);
-}
-
-.help-modal.show {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: all;
-}
-
-/* Adicionar ao CSS */
-#car.accelerating {
-    filter: hue-rotate(-30deg) saturate(150%);
-    transform: scaleX(1);
-}
-
-#car.braking {
-    filter: hue-rotate(60deg) saturate(200%);
-    transform: scaleX(1);
-}
-
-#car.reversing {
-    transform: scaleX(-1);
-}
-
-.tire-mark {
-    position: absolute;
-    height: 5px;
-    width: 40px;
-    background: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 5px,
-        #555 5px,
-        #555 10px
-    );
-    opacity: 0.7;
-    bottom: 10px;
-}
-
-/* Adicionar ao final do CSS existente */
-
-.result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--primary);
-}
-
-.result-content > div {
-    margin-bottom: 20px;
-}
-
-.calculation-steps {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 3px solid var(--secondary);
-}
-
-.dark-mode .calculation-steps {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.final-result {
-    padding: 15px;
-    background: #e8f5e9;
-    border-radius: 8px;
-    font-size: 1.4rem;
-    font-weight: bold;
-    text-align: center;
-}
-
-.dark-mode .final-result {
-    background: rgba(46, 204, 113, 0.1);
-}
-
-.step {
-    margin-bottom: 10px;
-    padding-left: 15px;
-    border-left: 2px solid var(--primary);
-}
-
-.hidden {
-    display: none;
-}
-
-#formula {
-    font-family: monospace;
-    font-size: 1.2rem;
-    padding: 10px;
-    background: #f1f8e9;
-    border-radius: 5px;
-    margin-top: 10px;
-}
-
-.dark-mode #formula {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-#car svg {
-    height: 80px;
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    transition: left 0.1s linear;
-}
-
-#car.accelerating svg rect {
-    fill: #2ecc71;
-}
-
-#car.braking svg rect {
-    fill: #e74c3c;
-}
-
-#car.reversing svg {
-    transform: scaleX(-1);
+    
+    .help-modal {
+        width: 90%;
+        right: 5%;
+    }
 }

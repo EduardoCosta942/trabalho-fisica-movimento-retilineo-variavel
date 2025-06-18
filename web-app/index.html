@@ -24,27 +24,27 @@
         <div class="input-section">
             <div class="input-group" data-tooltip="Velocidade no início do movimento (m/s)">
                 <label for="v0">v₀ (Veloc. Inicial):</label>
-                <input type="number" id="v0" placeholder="m/s">
+                <input type="number" id="v0" placeholder="m/s" step="any">
             </div>
             
             <div class="input-group" id="a-input" data-tooltip="Taxa de variação da velocidade (m/s²)">
                 <label for="a">a (Aceleração):</label>
-                <input type="number" id="a" placeholder="m/s²">
+                <input type="number" id="a" placeholder="m/s²" step="any">
             </div>
             
             <div class="input-group" data-tooltip="Velocidade no final do movimento (m/s)">
                 <label for="v">v (Veloc. Final):</label>
-                <input type="number" id="v" placeholder="m/s">
+                <input type="number" id="v" placeholder="m/s" step="any">
             </div>
             
             <div class="input-group" data-tooltip="Duração do movimento (s)">
                 <label for="t">t (Tempo):</label>
-                <input type="number" id="t" placeholder="s">
+                <input type="number" id="t" placeholder="s" step="any">
             </div>
             
             <div class="input-group" data-tooltip="Distância percorrida (m)">
                 <label for="s">s (Deslocamento):</label>
-                <input type="number" id="s" placeholder="m">
+                <input type="number" id="s" placeholder="m" step="any">
             </div>
         </div>
 
@@ -58,11 +58,10 @@
             <button id="calc-velocity">Calcular Veloc. Final (v)</button>
             <button id="calc-time">Calcular Tempo (t)</button>
             <button id="calc-displacement">Calcular Deslocamento (s)</button>
-            <button id="examples-btn">Exemplos</button>
+            <button id="simulate-btn">▶ Simular Movimento</button>
+            <button id="examples-btn">Exemplos Práticos</button>
             <button id="reset-btn">🔄 Resetar</button>
             <button id="export-pdf">📄 Exportar PDF</button>
-            <button id="save-sim">💾 Salvar Simulação</button>
-            <button id="load-sim">📂 Carregar Simulação</button>
         </div>
 
         <div class="results">
@@ -74,7 +73,7 @@
             <div class="result-content">
                 <div id="formula-display" class="hidden">
                     <h3>Fórmula Utilizada:</h3>
-                    <div id="formula"></div>
+                    <div id="formula" class="formula-box"></div>
                 </div>
                 
                 <div class="calculation-steps">
@@ -99,31 +98,55 @@
                         <circle cx="70" cy="40" r="7" fill="#2c3e50" />
                     </svg>
                 </div>
+                <div id="position-indicator">Posição: 0m</div>
             </div>
         </div>
 
         <div class="chart-container">
             <canvas id="velocity-chart"></canvas>
+            <div class="chart-controls">
+                <button id="zoom-in">+</button>
+                <button id="zoom-out">-</button>
+                <button id="export-chart">Exportar Gráfico</button>
+            </div>
         </div>
 
-        <div class="quiz-section">
-            <h2>Quiz de Cinemática</h2>
-            <div id="quiz-question"></div>
-            <div id="quiz-options"></div>
-            <div id="quiz-feedback"></div>
+        <div class="data-table">
+            <h2>Dados da Simulação</h2>
+            <table id="simulation-data">
+                <thead>
+                    <tr>
+                        <th>Tempo (s)</th>
+                        <th>Posição (m)</th>
+                        <th>Velocidade (m/s)</th>
+                        <th>Aceleração (m/s²)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados serão inseridos aqui pelo JavaScript -->
+                </tbody>
+            </table>
         </div>
     </div>
 
     <div class="help-icon" id="help-icon">?</div>
     <div class="help-modal" id="help-modal">
-        <h3>Ajuda - Fórmulas do MRUV</h3>
-        <ul>
-            <li><strong>v = v₀ + a·t</strong>: Velocidade final</li>
-            <li><strong>s = s₀ + v₀·t + ½·a·t²</strong>: Deslocamento</li>
-            <li><strong>a = (v - v₀)/t</strong>: Aceleração</li>
-            <li><strong>v² = v₀² + 2·a·Δs</strong>: Torricelli</li>
-        </ul>
-        <button id="close-help">Fechar</button>
+        <div class="help-content">
+            <h3>📚 Ajuda - Fórmulas do MRUV</h3>
+            <ul>
+                <li><strong>v = v₀ + a·t</strong>: Velocidade final</li>
+                <li><strong>s = s₀ + v₀·t + ½·a·t²</strong>: Deslocamento</li>
+                <li><strong>a = (v - v₀)/t</strong>: Aceleração</li>
+                <li><strong>v² = v₀² + 2·a·Δs</strong>: Equação de Torricelli</li>
+            </ul>
+            <div class="tips">
+                <h4>💡 Dicas:</h4>
+                <p>1. Preencha pelo menos 3 campos para calcular o quarto</p>
+                <p>2. Use valores negativos para movimento de frenagem</p>
+                <p>3. Clique em "Simular" para ver a animação do movimento</p>
+            </div>
+            <button id="close-help">Fechar</button>
+        </div>
     </div>
 
     <script src="script.js"></script>

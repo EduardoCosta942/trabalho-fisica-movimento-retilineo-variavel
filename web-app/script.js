@@ -1,520 +1,495 @@
-// Elementos DOM
-const v0Input = document.getElementById('v0');
-const vInput = document.getElementById('v');
-const tInput = document.getElementById('t');
-const sInput = document.getElementById('s');
-const formulaDisplay = document.getElementById('formula');
-const resultDisplay = document.getElementById('result');
-const car = document.getElementById('car');
-const themeToggle = document.getElementById('theme-toggle');
+// Variáveis globais
+let graficoVelocidade;
+let animacaoId;
+let posicaoCarro = 0;
+let estaAnimando = false;
+let dadosSimulacao = [];
+let usandoKmh = false;
 
-// Gráfico
-const ctx = document.getElementById('velocity-chart').getContext('2d');
-const velocityChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        datasets: [{
-            label: 'Velocidade (m/s)',
-            borderColor: '#3498db',
-            backgroundColor: 'rgba(52, 152, 219, 0.1)',
-            tension: 0.4,
-            fill: true
-        }]
+// Inicialização quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+    configurarEventos();
+    inicializarGrafico();
+});
+
+function configurarEventos() {
+    // Botões de cálculo
+    document.getElementById('calc-accel').addEventListener('click', calcularAceleracao);
+    document.getElementById('calc-velocity').addEventListener('click', calcularVelocidadeFinal);
+    document.getElementById('calc-time').addEventListener('click', calcularTempo);
+    document.getElementById('calc-displacement').addEventListener('click', calcularDeslocamento);
+    document.getElementById('simulate-btn').addEventListener('click', simularMovimento);
+    
+    // Botões de controle
+    document.getElementById('reset-btn').addEventListener('click', resetarCalculadora);
+    document.getElementById('show-formula-btn').addEventListener('click', alternarFormula);
+    document.getElementById('theme-toggle').addEventListener('click', alternarModoNoturno);
+    document.getElementById('unit-toggle').addEventListener('change', alternarUnidades);
+    
+    // Controles do gráfico
+    document.getElementById('zoom-in').addEventListener('click', zoomGrafico);
+    document.getElementById('zoom-out').addEventListener('click', zoomGrafico);
+    document.getElementById('export-chart').addEventListener('click', exportarGrafico);
+    
+    // Sistema de ajuda
+    document.getElementById('help-icon').addEventListener('click', alternarAjuda);
+    document.getElementById('close-help').addEventListener('click', alternarAjuda);
+    
+    // Seleção de tipo de movimento
+    document.getElementById('motion-type').addEventListener('change', function() {
+        const tipo = this.value;
+        document.getElementById('a-input').style.display = tipo === 'mruv' ? 'block' : 'none';
+        if (tipo === 'mru') document.getElementById('a').value = '0';
+    });
+    document.getElementById('examples-btn').addEventListener('click', mostrarExemplos);
+    document.getElementById('export-pdf').addEventListener('click', exportarParaPDF);
+}
+const exemplosPraticos = [
+    {
+        titulo: "Carro acelerando",
+        descricao: "Um carro parte do repouso e atinge 30 m/s em 5 segundos",
+        valores: { v0: 0, v: 30, t: 5, a: '', s: '' }
     },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            x: {
-                title: {
-                    display: true,
-                    text: 'Tempo (s)'
+    {
+        titulo: "Frenagem de emergência",
+        descricao: "Um carro a 72 km/h (20 m/s) freia e para em 4 segundos",
+        valores: { v0: 20, v: 0, t: 4, a: '', s: '' }
+    },
+    {
+        titulo: "Lançamento vertical",
+        descricao: "Objeto lançado para cima a 20 m/s (gravidade = -9.8 m/s²)",
+        valores: { v0: 20, a: -9.8, t: '', v: 0, s: '' }
+    }
+];
+
+function inicializarGrafico() {
+    const ctx = document.getElementById('velocity-chart').getContext('2d');
+    graficoVelocidade = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Velocidade (m/s)',
+                data: [],
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 3,
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Velocidade (m/s)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Tempo (s)'
+                    }
                 }
             },
-            y: {
-                title: {
-                    display: true,
-                    text: 'Velocidade (m/s)'
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} m/s`;
+                        }
+                    }
                 }
             }
         }
-    }
-});
-
-// Estado da simulação
-let currentSimulation = null;
-
-// Fórmulas MRUV
-const formulas = {
-    acceleration: {
-        calc: (v0, v, t) => (v - v0) / t,
-        text: "a = (v - v₀) / t"
-    },
-    finalVelocity: {
-        calc: (v0, a, t) => v0 + a * t,
-        text: "v = v₀ + a·t"
-    },
-    time: {
-        calc: (v0, v, a) => (v - v0) / a,
-        text: "t = (v - v₀) / a"
-    },
-    displacement: {
-        calc: (v0, a, t) => v0 * t + 0.5 * a * t ** 2,
-        text: "s = v₀·t + ½·a·t²"
-    }
-};
-
-// Event Listeners
-document.getElementById('calc-accel').addEventListener('click', () => calculate('acceleration'));
-document.getElementById('calc-velocity').addEventListener('click', () => calculate('finalVelocity'));
-document.getElementById('calc-time').addEventListener('click', () => calculate('time'));
-document.getElementById('calc-displacement').addEventListener('click', () => calculate('displacement'));
-document.getElementById('reset-btn').addEventListener('click', resetSimulation);
-themeToggle.addEventListener('click', toggleTheme);
-
-// Inicializar quiz
-initQuiz();
-
-// Função principal de cálculo
-function calculate(type) {
-    // Obter valores dos inputs
-    const v0 = parseFloat(v0Input.value) || 0;
-    const v = parseFloat(vInput.value);
-    const t = parseFloat(tInput.value);
-    const s = parseFloat(sInput.value);
-    
-    let result, a;
-    
-    try {
-        switch(type) {
-            case 'acceleration':
-                if (t === 0) throw new Error("Tempo não pode ser zero!");
-                a = formulas.acceleration.calc(v0, v, t);
-                result = `Aceleração (a) = ${a.toFixed(2)} m/s²`;
-                formulaDisplay.textContent = formulas.acceleration.text;
-                break;
-                
-            case 'finalVelocity':
-                a = (v0 && t && s) ? (2*(s - v0*t))/t**2 : 
-                    parseFloat(prompt("Informe a aceleração (m/s²):"));
-                if (isNaN(a)) throw new Error("Aceleração inválida!");
-                const velocity = formulas.finalVelocity.calc(v0, a, t);
-                result = `Veloc. Final (v) = ${velocity.toFixed(2)} m/s`;
-                formulaDisplay.textContent = formulas.finalVelocity.text;
-                break;
-                
-            case 'time':
-                a = parseFloat(prompt("Informe a aceleração (m/s²):"));
-                if (isNaN(a)) throw new Error("Aceleração inválida!");
-                const time = formulas.time.calc(v0, v, a);
-                result = `Tempo (t) = ${time.toFixed(2)} s`;
-                formulaDisplay.textContent = formulas.time.text;
-                break;
-                
-            case 'displacement':
-                a = parseFloat(prompt("Informe a aceleração (m/s²):"));
-                if (isNaN(a)) throw new Error("Aceleração inválida!");
-                const displacement = formulas.displacement.calc(v0, a, t);
-                result = `Deslocamento (s) = ${displacement.toFixed(2)} m`;
-                formulaDisplay.textContent = formulas.displacement.text;
-                break;
-        }
-        
-        resultDisplay.innerHTML = result;
-        resultDisplay.style.color = '#2ecc71';
-        
-        // Iniciar simulação
-        if (type === 'acceleration') {
-            startSimulation(v0, a, t);
-        }
-        
-    } catch (error) {
-        resultDisplay.textContent = `Erro: ${error.message}`;
-        resultDisplay.style.color = '#e74c3c';
-    }
-}
-
-// Função para iniciar a simulação
-function startSimulation(v0, a, t) {
-    resetSimulation();
-    
-    currentSimulation = {
-        v0,
-        a,
-        t,
-        startTime: Date.now()
-    };
-    
-    // Atualizar gráfico
-    updateChart(v0, a, t);
-    
-    // Iniciar animação
-    animateCar(v0, a, t);
-}
-
-// Animação do carro
-function animateCar(v0, a, t) {
-    const trackWidth = document.getElementById('track').offsetWidth - car.offsetWidth;
-    let start = null;
-    
-    function step(timestamp) {
-        if (!start) start = timestamp;
-        const elapsed = (timestamp - start) / 1000;
-        
-        if (elapsed > t) {
-            car.style.left = `${trackWidth}px`;
-            return;
-        }
-        
-        // Calcular deslocamento atual
-        const s = v0 * elapsed + 0.5 * a * elapsed ** 2;
-        
-        // Mapear para posição na tela
-        const progress = Math.min(s / (v0 * t + 0.5 * a * t ** 2), 1);
-        car.style.left = `${progress * trackWidth}px`;
-        
-        requestAnimationFrame(step);
-    }
-    
-    requestAnimationFrame(step);
-}
-
-// Atualizar gráfico
-function updateChart(v0, a, t) {
-    const data = [];
-    const labels = [];
-    
-    for (let i = 0; i <= 10; i++) {
-        const time = (i * t) / 10;
-        labels.push(time.toFixed(1));
-        data.push(v0 + a * time);
-    }
-    
-    velocityChart.data.labels = labels;
-    velocityChart.data.datasets[0].data = data;
-    velocityChart.update();
-}
-
-// Resetar simulação
-function resetSimulation() {
-    if (currentSimulation) {
-        currentSimulation = null;
-    }
-    car.style.left = '0';
-    v0Input.value = '';
-    vInput.value = '';
-    tInput.value = '';
-    sInput.value = '';
-    formulaDisplay.textContent = '';
-    resultDisplay.textContent = '';
-    velocityChart.data.labels = [];
-    velocityChart.data.datasets[0].data = [];
-    velocityChart.update();
-}
-
-// Alternar modo noturno
-function toggleTheme() {
-    document.body.classList.toggle('dark-mode');
-    themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️ Modo Claro' : '🌙 Modo Noturno';
-}
-
-// Sistema de Quiz
-function initQuiz() {
-    const questions = [
-        {
-            question: "Qual fórmula representa o cálculo da velocidade final no MRUV?",
-            options: [
-                "v = v₀ + a·t",
-                "s = v₀·t + ½·a·t²",
-                "a = Δv / Δt",
-                "v² = v₀² + 2·a·Δs"
-            ],
-            correct: 0
-        },
-        {
-            question: "Em um MRUV com aceleração negativa:",
-            options: [
-                "A velocidade aumenta constantemente",
-                "O movimento é sempre progressivo",
-                "A velocidade diminui com o tempo",
-                "O deslocamento é sempre positivo"
-            ],
-            correct: 2
-        }
-    ];
-    
-    let currentQuestion = 0;
-    
-    function showQuestion() {
-        const quizQuestion = document.getElementById('quiz-question');
-        const quizOptions = document.getElementById('quiz-options');
-        const quizFeedback = document.getElementById('quiz-feedback');
-        
-        quizQuestion.textContent = questions[currentQuestion].question;
-        quizOptions.innerHTML = '';
-        quizFeedback.innerHTML = '';
-        
-        questions[currentQuestion].options.forEach((option, index) => {
-            const button = document.createElement('button');
-            button.textContent = option;
-            button.addEventListener('click', () => checkAnswer(index));
-            quizOptions.appendChild(button);
-        });
-    }
-    
-    function checkAnswer(selected) {
-        const quizFeedback = document.getElementById('quiz-feedback');
-        const isCorrect = selected === questions[currentQuestion].correct;
-        
-        if (isCorrect) {
-            quizFeedback.textContent = "✅ Resposta correta!";
-            quizFeedback.style.color = '#2ecc71';
-            
-            setTimeout(() => {
-                currentQuestion = (currentQuestion + 1) % questions.length;
-                showQuestion();
-            }, 1500);
-        } else {
-            quizFeedback.textContent = "❌ Tente novamente!";
-            quizFeedback.style.color = '#e74c3c';
-        }
-    }
-    
-    showQuestion();
-}
-// Adicionar ao script.js
-const history = [];
-
-function addToHistory(calculation) {
-    history.push(calculation);
-    if (history.length > 5) history.shift();
-    updateHistoryDisplay();
-}
-
-function updateHistoryDisplay() {
-    const historyList = document.createElement('div');
-    historyList.className = 'history-list';
-    
-    history.forEach(item => {
-        const entry = document.createElement('div');
-        entry.className = 'history-entry';
-        entry.textContent = `${item.type}: ${item.result}`;
-        historyList.appendChild(entry);
-    });
-    
-    const existingHistory = document.querySelector('.history-list');
-    if (existingHistory) {
-        document.querySelector('.results').replaceChild(historyList, existingHistory);
-    } else {
-        document.querySelector('.results').appendChild(historyList);
-    }
-}
-
-// Adicionar ao script.js
-document.getElementById('export-pdf').addEventListener('click', exportPDF);
-
-function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Título
-    doc.setFontSize(20);
-    doc.text("Relatório de Simulação - MRUV", 105, 15, null, null, 'center');
-    
-    // Parâmetros
-    doc.setFontSize(12);
-    doc.text(`Data: ${new Date().toLocaleString()}`, 15, 25);
-    
-    if (currentSimulation) {
-        doc.text(`- Velocidade inicial: ${currentSimulation.v0} m/s`, 15, 35);
-        doc.text(`- Aceleração: ${currentSimulation.a} m/s²`, 15, 40);
-        doc.text(`- Tempo: ${currentSimulation.t} s`, 15, 45);
-        doc.text(`- Deslocamento: ${(currentSimulation.v0 * currentSimulation.t + 0.5 * currentSimulation.a * Math.pow(currentSimulation.t, 2)).toFixed(2)} m`, 15, 50);
-    }
-    
-    // Fórmulas
-    doc.setFontSize(14);
-    doc.text("Fórmulas Utilizadas:", 15, 65);
-    doc.setFontSize(12);
-    doc.text("v = v₀ + a·t", 20, 75);
-    doc.text("s = v₀·t + ½·a·t²", 20, 80);
-    doc.text("a = (v - v₀)/t", 20, 85);
-    doc.text("v² = v₀² + 2·a·Δs", 20, 90);
-    
-    // Gráfico
-    const chartCanvas = document.getElementById('velocity-chart');
-    const chartImage = chartCanvas.toDataURL('image/png');
-    doc.addImage(chartImage, 'PNG', 30, 100, 150, 75);
-    
-    // Salvar PDF
-    doc.save('simulacao_mruv.pdf');
-}
-
-// Adicionar ao script.js
-document.getElementById('examples-btn').addEventListener('click', showExamples);
-
-function showExamples() {
-    const examples = [
-        {name: "Aceleração Positiva", v0: 0, v: 20, t: 5, s: 50},
-        {name: "Desaceleração", v0: 30, v: 0, t: 6, s: 90},
-        {name: "Queda Livre", v0: 0, a: 9.8, t: 3, s: 44.1}
-    ];
-    
-    const examplesDiv = document.createElement('div');
-    examplesDiv.className = 'examples-modal';
-    
-    examplesDiv.innerHTML = `
-        <h3>Exemplos Pré-Definidos</h3>
-        <div class="examples-list">
-            ${examples.map(ex => `
-                <div class="example" data-v0="${ex.v0}" data-v="${ex.v}" data-t="${ex.t}" data-s="${ex.s || ''}" data-a="${ex.a || ''}">
-                    <strong>${ex.name}</strong>
-                    <div>v₀: ${ex.v0} m/s, v: ${ex.v} m/s, t: ${ex.t} s</div>
-                </div>
-            `).join('')}
-        </div>
-        <button id="close-examples">Fechar</button>
-    `;
-    
-    document.body.appendChild(examplesDiv);
-    
-    // Event listeners
-    document.querySelectorAll('.example').forEach(example => {
-        example.addEventListener('click', function() {
-            const data = this.dataset;
-            v0Input.value = data.v0;
-            vInput.value = data.v;
-            tInput.value = data.t;
-            sInput.value = data.s || '';
-            
-            if (data.a) {
-                startSimulation(parseFloat(data.v0), parseFloat(data.a), parseFloat(data.t));
-            }
-            
-            examplesDiv.remove();
-        });
-    });
-    
-    document.getElementById('close-examples').addEventListener('click', () => {
-        examplesDiv.remove();
     });
 }
 
-// Adicionar ao script.js
-document.getElementById('unit-toggle').addEventListener('change', convertUnits);
-
-function convertUnits() {
-    const isKmh = document.getElementById('unit-toggle').checked;
-    const factor = isKmh ? 3.6 : 1/3.6;
-    const unit = isKmh ? 'km/h' : 'm/s';
+function calcularAceleracao() {
+    const v0 = parseFloat(document.getElementById('v0').value);
+    const v = parseFloat(document.getElementById('v').value);
+    const t = parseFloat(document.getElementById('t').value);
     
-    // Atualizar inputs
-    const velocityInputs = [v0Input, vInput];
-    velocityInputs.forEach(input => {
-        if (input.value) {
-            input.value = (parseFloat(input.value) * factor).toFixed(2);
-        }
-    });
-    
-    // Atualizar labels
-    document.querySelectorAll('label[for="v0"], label[for="v"]').forEach(label => {
-        label.textContent = label.textContent.replace(/\(.*\)/, `(${unit})`);
-    });
-    
-    // Atualizar resultados
-    if (resultDisplay.textContent.includes('m/s')) {
-        resultDisplay.textContent = resultDisplay.textContent.replace('m/s', unit);
-    }
-}
-
-// Adicionar ao script.js
-function saveSimulation() {
-    if (!currentSimulation) return;
-    
-    const simulations = JSON.parse(localStorage.getItem('mruv_simulations') || []);
-    simulations.push({
-        ...currentSimulation,
-        timestamp: new Date().toISOString(),
-        displacement: currentSimulation.v0 * currentSimulation.t + 0.5 * currentSimulation.a * Math.pow(currentSimulation.t, 2)
-    });
-    
-    localStorage.setItem('mruv_simulations', JSON.stringify(simulations));
-    alert('Simulação salva com sucesso!');
-}
-
-function loadSimulations() {
-    const simulations = JSON.parse(localStorage.getItem('mruv_simulations') || [])
-    if (simulations.length === 0) {
-        alert('Nenhuma simulação salva encontrada!');
+    if (isNaN(v0) || isNaN(v) || isNaN(t)) {
+        mostrarErro("Preencha os campos v₀, v e t para calcular a aceleração");
         return;
-    }}
+    }
     
-    const simulationList = document.createElement('div');
-    simulationList.className = 'simulations-modal';
+    if (t === 0) {
+        mostrarErro("O tempo não pode ser zero");
+        return;
+    }
     
-    simulationList.innerHTML = `
-        <h3>Simulações Salvas</h3>
-        <div class="simulations-list">
-            ${simulations.map((sim, i) => `
-                <div class="simulation" data-index="${i}">
-                    <strong>Simulação ${i+1}</strong>
-                    <div>${new Date(sim.timestamp).toLocaleString()}</div>
-                    <div>v₀: ${sim.v0} m/s, a: ${sim.a} m/s², t: ${sim.t} s</div>
-                </div>
-            `).join('')}
-        </div>
-        <button id="close-simulations">Fechar</button>
-    `;
+    const a = (v - v0) / t;
+    document.getElementById('a').value = a.toFixed(2);
     
-    function calculate(type) {
-    // Limpar resultados anteriores
-    document.getElementById('calculation-steps').innerHTML = '';
-    document.getElementById('result').textContent = '';
+    mostrarResultado(`a = (v - v₀) / t = (${v} - ${v0}) / ${t} = ${a.toFixed(2)} m/s²`);
+    mostrarFormula(`a = (v - v₀) / t`);
+    
+    atualizarTabelaSimulacao(v0, a, t);
+}
 
-    document.body.appendChild(simulationList);
+function calcularVelocidadeFinal() {
+    const v0 = parseFloat(document.getElementById('v0').value);
+    const a = parseFloat(document.getElementById('a').value);
+    const t = parseFloat(document.getElementById('t').value);
     
-    // Event listeners
-    document.querySelectorAll('.simulation').forEach(sim => {
-        sim.addEventListener('click', function() {
-            const index = this.dataset.index;
-            const simulation = simulations[index];
-            
-            v0Input.value = simulation.v0;
-            document.getElementById('a').value = simulation.a;
-            tInput.value = simulation.t;
-            
-            startSimulation(simulation.v0, simulation.a, simulation.t);
-            simulationList.remove();
+    if (isNaN(v0) || isNaN(a) || isNaN(t)) {
+        mostrarErro("Preencha os campos v₀, a e t para calcular a velocidade final");
+        return;
+    }
+    
+    const v = v0 + a * t;
+    document.getElementById('v').value = v.toFixed(2);
+    
+    mostrarResultado(`v = v₀ + a × t = ${v0} + ${a} × ${t} = ${v.toFixed(2)} m/s`);
+    mostrarFormula(`v = v₀ + a × t`);
+    
+    atualizarTabelaSimulacao(v0, a, t);
+}
+
+function calcularTempo() {
+    const v0 = parseFloat(document.getElementById('v0').value);
+    const v = parseFloat(document.getElementById('v').value);
+    const a = parseFloat(document.getElementById('a').value);
+    
+    if (isNaN(v0) || isNaN(v) || isNaN(a)) {
+        mostrarErro("Preencha os campos v₀, v e a para calcular o tempo");
+        return;
+    }
+    
+    if (a === 0) {
+        mostrarErro("A aceleração não pode ser zero");
+        return;
+    }
+    
+    const t = (v - v0) / a;
+    document.getElementById('t').value = t.toFixed(2);
+    
+    mostrarResultado(`t = (v - v₀) / a = (${v} - ${v0}) / ${a} = ${t.toFixed(2)} s`);
+    mostrarFormula(`t = (v - v₀) / a`);
+    
+    atualizarTabelaSimulacao(v0, a, t);
+}
+
+function calcularDeslocamento() {
+    const v0 = parseFloat(document.getElementById('v0').value);
+    const a = parseFloat(document.getElementById('a').value);
+    const t = parseFloat(document.getElementById('t').value);
+    
+    if (isNaN(v0) || isNaN(a) || isNaN(t)) {
+        mostrarErro("Preencha os campos v₀, a e t para calcular o deslocamento");
+        return;
+    }
+    
+    const s = v0 * t + 0.5 * a * t * t;
+    document.getElementById('s').value = s.toFixed(2);
+    
+    mostrarResultado(`s = v₀ × t + ½ × a × t² = ${v0} × ${t} + 0.5 × ${a} × ${t}² = ${s.toFixed(2)} m`);
+    mostrarFormula(`s = v₀ × t + ½ × a × t²`);
+    
+    atualizarTabelaSimulacao(v0, a, t);
+}
+
+function simularMovimento() {
+    const v0 = parseFloat(document.getElementById('v0').value);
+    const a = parseFloat(document.getElementById('a').value);
+    const t = parseFloat(document.getElementById('t').value);
+    
+    if (isNaN(v0) || isNaN(a) || isNaN(t)) {
+        mostrarErro("Preencha v₀, a e t para simular o movimento");
+        return;
+    }
+    
+    atualizarGrafico(v0, a, t);
+    animarCarro(v0, a, t);
+    atualizarTabelaSimulacao(v0, a, t);
+}
+
+function atualizarGrafico(v0, a, t) {
+    const pontosTempo = [];
+    const pontosVelocidade = [];
+    const passos = 20;
+    
+    for (let i = 0; i <= passos; i++) {
+        const tempoAtual = (i / passos) * t;
+        pontosTempo.push(tempoAtual.toFixed(1));
+        pontosVelocidade.push(v0 + a * tempoAtual);
+    }
+    
+    graficoVelocidade.data.labels = pontosTempo;
+    graficoVelocidade.data.datasets[0].data = pontosVelocidade;
+    graficoVelocidade.update();
+}
+
+function animarCarro(v0, a, t) {
+    if (estaAnimando) {
+        cancelAnimationFrame(animacaoId);
+        estaAnimando = false;
+    }
+    
+    const carro = document.getElementById('car');
+    const pista = document.getElementById('track');
+    const indicadorPosicao = document.getElementById('position-indicator');
+    const larguraPista = pista.offsetWidth - carro.offsetWidth;
+    const deslocamentoTotal = v0 * t + 0.5 * a * t * t;
+    
+    // Resetar posição e classes
+    carro.style.left = '0px';
+    posicaoCarro = 0;
+    carro.className = '';
+    
+    // Aplicar classes de estado
+    if (a > 0) {
+        carro.classList.add('acelerando');
+    } else if (a < 0) {
+        carro.classList.add('freiando');
+    }
+    if (v0 < 0) {
+        carro.classList.add('invertido');
+    }
+    
+    const tempoInicio = Date.now();
+    const duracao = t * 1000; // Converter para milissegundos
+    
+    function atualizarAnimacao() {
+        const tempoDecorrido = Date.now() - tempoInicio;
+        const progresso = Math.min(tempoDecorrido / duracao, 1);
+        
+        // Calcular posição atual (MRUV)
+        const deslocamento = v0 * t * progresso + 0.5 * a * t * t * progresso * progresso;
+        const posicao = (deslocamento / deslocamentoTotal) * larguraPista;
+        
+        // Atualizar posição do carro
+        carro.style.left = `${posicao}px`;
+        posicaoCarro = posicao;
+        
+        // Atualizar indicador de posição
+        indicadorPosicao.textContent = `Posição: ${deslocamento.toFixed(2)}m`;
+        
+        if (progresso < 1) {
+            animacaoId = requestAnimationFrame(atualizarAnimacao);
+        } else {
+            estaAnimando = false;
+        }
+    }
+    
+    estaAnimando = true;
+    atualizarAnimacao();
+}
+
+function atualizarTabelaSimulacao(v0, a, t) {
+    const tabela = document.querySelector('#simulation-data tbody');
+    tabela.innerHTML = '';
+    
+    const passos = 10;
+    dadosSimulacao = [];
+    
+    for (let i = 0; i <= passos; i++) {
+        const tempoAtual = (i / passos) * t;
+        const velocidade = v0 + a * tempoAtual;
+        const deslocamento = v0 * tempoAtual + 0.5 * a * tempoAtual * tempoAtual;
+        
+        dadosSimulacao.push({
+            tempo: tempoAtual,
+            velocidade: velocidade,
+            deslocamento: deslocamento
         });
-    });
-    
-    document.getElementById('show-formula-btn').addEventListener('click', () => {
-    document.getElementById('formula-display').classList.toggle('hidden');
-});
-
-    document.getElementById('close-simulations').addEventListener('click', () => {
-        simulationList.remove();
-    });
+        
+        const linha = document.createElement('tr');
+        linha.innerHTML = `
+            <td>${tempoAtual.toFixed(2)}</td>
+            <td>${deslocamento.toFixed(2)}</td>
+            <td>${velocidade.toFixed(2)}</td>
+            <td>${a.toFixed(2)}</td>
+        `;
+        tabela.appendChild(linha);
+    }
 }
 
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
+function mostrarResultado(texto) {
+    const divResultado = document.getElementById('result');
+    divResultado.innerHTML = texto;
     
-    document.body.appendChild(notification);
+    const divPassos = document.getElementById('calculation-steps');
+    divPassos.innerHTML = `<div class="passo-calculo">${texto}</div>`;
     
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 500);
-    }, 3000);
+    document.querySelector('.results').style.display = 'block';
 }
-showNotification('Cálculo realizado com sucesso!', 'success')
-showNotification('Erro: tempo não pode ser zero', 'error')
 
-function addCalculationStep(text) {
-    const step = document.createElement('div');
-    step.className = 'step';
-    step.textContent = text;
-    document.getElementById('calculation-steps').appendChild(step);
+function mostrarFormula(formula) {
+    const divFormula = document.getElementById('formula');
+    divFormula.innerHTML = formula;
+}
+
+function mostrarErro(mensagem) {
+    const divResultado = document.getElementById('result');
+    divResultado.innerHTML = `<span style="color: var(--perigo)">${mensagem}</span>`;
+}
+
+function alternarFormula() {
+    const divFormula = document.getElementById('formula-display');
+    divFormula.classList.toggle('oculto');
+}
+
+function alternarModoNoturno() {
+    document.body.classList.toggle('modo-noturno');
+    const botaoTema = document.getElementById('theme-toggle');
+    botaoTema.textContent = document.body.classList.contains('modo-noturno') ? '☀️ Modo Claro' : '🌙 Modo Noturno';
+    
+    // Atualizar cores do gráfico
+    if (graficoVelocidade) {
+        graficoVelocidade.update();
+    }
+}
+
+function alternarUnidades() {
+    usandoKmh = this.checked;
+    const fator = usandoKmh ? 3.6 : 1/3.6;
+    
+    // Converter valores existentes
+    const campos = ['v0', 'v', 'a'];
+    campos.forEach(id => {
+        const campo = document.getElementById(id);
+        if (campo.value) {
+            campo.value = (parseFloat(campo.value) * fator).toFixed(2);
+        }
+    });
+    
+    // Atualizar rótulos
+    const sufixo = usandoKmh ? 'km/h' : 'm/s';
+    document.querySelector('label[for="v0"]').textContent = `v₀ (Veloc. Inicial): (${sufixo})`;
+    document.querySelector('label[for="v"]').textContent = `v (Veloc. Final): (${sufixo})`;
+    document.querySelector('label[for="a"]').textContent = `a (Aceleração): (${usandoKmh ? 'km/h²' : 'm/s²'})`;
+}
+
+function zoomGrafico(e) {
+    const fator = this.id === 'zoom-in' ? 1.2 : 0.8;
+    
+    if (graficoVelocidade.options.scales.x.min === undefined) {
+        graficoVelocidade.options.scales.x.min = 0;
+        graficoVelocidade.options.scales.x.max = graficoVelocidade.data.labels[graficoVelocidade.data.labels.length - 1];
+    }
+    
+    const range = graficoVelocidade.options.scales.x.max - graficoVelocidade.options.scales.x.min;
+    const center = graficoVelocidade.options.scales.x.min + range / 2;
+    const newRange = range * fator;
+    
+    graficoVelocidade.options.scales.x.min = Math.max(0, center - newRange / 2);
+    graficoVelocidade.options.scales.x.max = center + newRange / 2;
+    graficoVelocidade.update();
+}
+
+function exportarGrafico() {
+    const link = document.createElement('a');
+    link.download = 'grafico-velocidade.png';
+    link.href = document.getElementById('velocity-chart').toDataURL('image/png');
+    link.click();
+}
+
+function resetarCalculadora() {
+    // Limpar inputs
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.value = '';
+    });
+    
+    // Limpar resultados
+    document.getElementById('result').innerHTML = '';
+    document.getElementById('calculation-steps').innerHTML = '';
+    document.getElementById('formula').innerHTML = '';
+    document.getElementById('formula-display').classList.add('oculto');
+    
+    // Resetar animação
+    const carro = document.getElementById('car');
+    carro.style.left = '0px';
+    carro.className = '';
+    document.getElementById('position-indicator').textContent = 'Posição: 0m';
+    
+    if (estaAnimando) {
+        cancelAnimationFrame(animacaoId);
+        estaAnimando = false;
+    }
+    
+    // Resetar gráfico
+    graficoVelocidade.data.labels = [];
+    graficoVelocidade.data.datasets[0].data = [];
+    graficoVelocidade.update();
+    
+    // Resetar tabela
+    document.querySelector('#simulation-data tbody').innerHTML = '';
+}
+
+function alternarAjuda() {
+    document.getElementById('help-modal').classList.toggle('mostrar');
+}
+function mostrarExemplos() {
+    const exemplo = exemplosPraticos[Math.floor(Math.random() * exemplosPraticos.length)];
+    
+    // Preencher os campos com os valores do exemplo
+    for (const [key, value] of Object.entries(exemplo.valores)) {
+        const campo = document.getElementById(key);
+        if (campo) campo.value = value !== '' ? value : '';
+    }
+    
+    // Mostrar detalhes do exemplo
+    mostrarResultado(`Exemplo: ${exemplo.titulo}<br>${exemplo.descricao}`);
+    mostrarFormula('Preenchi os campos com valores de exemplo. Agora clique em calcular ou simular!');
+}
+
+async function exportarParaPDF() {
+    try {
+        // Carregar a biblioteca jsPDF dinamicamente
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Adicionar título
+        doc.setFontSize(20);
+        doc.text('Relatório de Simulação MRUV', 105, 15, { align: 'center' });
+        
+        // Adicionar dados básicos
+        doc.setFontSize(12);
+        doc.text(`Velocidade Inicial (v₀): ${document.getElementById('v0').value || '---'} m/s`, 20, 30);
+        doc.text(`Aceleração (a): ${document.getElementById('a').value || '---'} m/s²`, 20, 40);
+        doc.text(`Velocidade Final (v): ${document.getElementById('v').value || '---'} m/s`, 20, 50);
+        doc.text(`Tempo (t): ${document.getElementById('t').value || '---'} s`, 20, 60);
+        doc.text(`Deslocamento (s): ${document.getElementById('s').value || '---'} m`, 20, 70);
+        
+        // Adicionar resultado se existir
+        const resultado = document.getElementById('result').innerText;
+        if (resultado) {
+            doc.text('Resultado:', 20, 90);
+            doc.text(resultado, 30, 100);
+        }
+        
+        // Adicionar gráfico como imagem
+        const canvas = document.getElementById('velocity-chart');
+        if (canvas) {
+            const chartImage = await getChartAsImage(canvas);
+            if (chartImage) {
+                doc.addImage(chartImage, 'PNG', 40, 110, 130, 80);
+            }
+        }
+        
+        // Salvar o PDF
+        doc.save('simulacao_mruv.pdf');
+    } catch (error) {
+        mostrarErro("Erro ao gerar PDF. Recarregue a página e tente novamente.");
+        console.error("Erro ao gerar PDF:", error);
+    }
+}
+
+function getChartAsImage(canvas) {
+    return new Promise((resolve) => {
+        if (!canvas) return resolve(null);
+        
+        canvas.toBlob((blob) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+        }, 'image/png');
+    });
 }
